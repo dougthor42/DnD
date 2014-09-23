@@ -51,7 +51,7 @@ class Example(Tkinter.Frame):
                    'C',
                    ]
 
-        list_box = Tkinter.Listbox()
+        list_box = Tkinter.Listbox(self)
         for _i in classes:
             list_box.insert(Tkinter.END, _i)
 
@@ -62,9 +62,24 @@ class Example(Tkinter.Frame):
         self.label = Tkinter.Label(self, text=0, textvariable=self.string_var)
         self.label.place(x=120, y=210)
 
+        self.spin_var = 0
+        spinbox = Tkinter.Spinbox(self,
+                                  values=range(31),
+                                  command=self.onSpinChange,
+                                  )
+        self.spinbox = spinbox
+        spinbox.pack()
+        spinbox.place(x=300, y=50)
+
+        self.str_var = Tkinter.IntVar()
+        textbox = Tkinter.Entry(self, textvariable=self.str_var)
+        textbox.pack()
+        textbox.place(x=300, y=100)
+
     def onClick(self):
         if self.var.get() == 1:
             self.master.title("Checkbutton")
+            self.str_var.set(self.str_var.get() + 1)
         else:
             self.master.title("")
 
@@ -77,6 +92,9 @@ class Example(Tkinter.Frame):
         value = sender.get(idx)
 
         self.string_var.set(value)
+
+    def onSpinChange(self):
+        self.str_var.set("{}".format((int(self.spinbox.get()) // 2) - 5))
 
 
 def main():
