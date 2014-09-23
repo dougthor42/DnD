@@ -17,69 +17,91 @@ Options:
 from __future__ import (print_function, division,
                         absolute_import, unicode_literals)
 from docopt import docopt
-import Tkinter
+import Tkinter as tk
 
 __author__ = "Douglas Thor"
 __version__ = "v0.1.0"
 
 
-class Example(Tkinter.Frame):
+class Example(tk.Frame):
     def __init__(self, parent):
-        Tkinter.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent)
         self.parent = parent
         self.initUI()
 
     def initUI(self):
         self.parent.title("Simple")
-
-        self.pack(fill=Tkinter.BOTH, expand=1)
-
-        quitButton = Tkinter.Button(self, text="Quit",
-                                    command=self.buttonClick)
-        quitButton.place(x=50, y=50)
         
-        self.var = Tkinter.IntVar()
-        check_button = Tkinter.Checkbutton(self, text='hellp',
+#        self.label = tk.Label(self, text="jhsdfkjhskgd")
+#        self.label.place(x=250, y=5)
+
+        self.ability_score_strength = AbilityScoreFrame(self)
+        self.ability_score_strength.place(x=10, y=10, width=200, height=50)
+        
+        self.ability_score_dexterity = AbilityScoreFrame(self)
+        self.ability_score_dexterity.place(x=10, y=110, width=200, height=100)
+        
+#        self.ability_score_constitution = AbilityScoreFrame(self)
+#        self.ability_score_constitution.place(x=10, y=220, width=200, height=100)
+#
+#        self.ability_score_intelligence = AbilityScoreFrame(self)
+#        self.ability_score_intelligence.place(x=10, y=330, width=200, height=100)
+#
+#        self.ability_score_wisdom = AbilityScoreFrame(self)
+#        self.ability_score_wisdom.place(x=10, y=440, width=200, height=100)
+#
+#        self.ability_score_charisma = AbilityScoreFrame(self)
+#        self.ability_score_charisma.place(x=10, y=550, width=200, height=100)
+        
+        base_y = 10
+        height = 50
+        for name in ["skillname1", "skillname2", "skillname3"]:
+            self.skill = SkillFrame(self, name)
+            self.skill.place(x=250, y=base_y, width=200, height=50)
+            base_y += height + 5
+
+
+        self.pack(fill=tk.BOTH, expand=1)
+        
+        close_button = tk.Button(self, text='Close')
+        close_button.pack(side=tk.RIGHT, padx=5, pady=5)
+        ok_button = tk.Button(self, text='OK')
+        ok_button.pack(side=tk.RIGHT)
+
+        self.quitButton = tk.Button(self,
+                                    text="Quit",
+                                    command=self.buttonClick,
+                                    )
+        self.quitButton.place(x=500, y=100)
+
+        self.var = tk.IntVar()
+        self.check_button = tk.Checkbutton(self, text='hellp',
                                            variable=self.var,
-                                           command=self.onClick)
+                                           command=self.onClick,
+                                           )
 
-        check_button.select()
-        check_button.place(x=15, y=15)
+        self.check_button.select()
+        self.check_button.place(x=300, y=300)
 
-        classes = ['A',
-                   'B',
-                   'C',
-                   ]
+#        classes = ['A',
+#                   'B',
+#                   'C',
+#                   ]
+#
+#        list_box = tk.Listbox(self)
+#        for _i in classes:
+#            list_box.insert(tk.END, _i)
+#
+#        list_box.bind("<<ListboxSelect>>", self.onSelect)
+#        list_box.place(x=250, y=50)
 
-        list_box = Tkinter.Listbox(self)
-        for _i in classes:
-            list_box.insert(Tkinter.END, _i)
-
-        list_box.bind("<<ListboxSelect>>", self.onSelect)
-        list_box.place(x=120, y=50)
-
-        self.string_var = Tkinter.StringVar()
-        self.label = Tkinter.Label(self, text=0, textvariable=self.string_var)
+        self.string_var = tk.StringVar()
+        self.label = tk.Label(self, text=0, textvariable=self.string_var)
         self.label.place(x=120, y=210)
-
-        self.spin_var = 0
-        spinbox = Tkinter.Spinbox(self,
-                                  values=range(31),
-                                  command=self.onSpinChange,
-                                  )
-        self.spinbox = spinbox
-        spinbox.pack()
-        spinbox.place(x=300, y=50)
-
-        self.str_var = Tkinter.IntVar()
-        textbox = Tkinter.Entry(self, textvariable=self.str_var)
-        textbox.pack()
-        textbox.place(x=300, y=100)
 
     def onClick(self):
         if self.var.get() == 1:
             self.master.title("Checkbutton")
-            self.str_var.set(self.str_var.get() + 1)
         else:
             self.master.title("")
 
@@ -97,11 +119,124 @@ class Example(Tkinter.Frame):
         self.str_var.set("{}".format((int(self.spinbox.get()) // 2) - 5))
 
 
+class AbilityScoreFrame(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent, relief=tk.GROOVE, borderwidth=1)
+        self.parent = parent
+        self.init_ui()
+
+    def init_ui(self):
+        self.points = 0
+        self.score_base = -5
+        self.score = self.score_base
+
+        self.proficient_var = tk.IntVar()
+        self.proficient_var.set(0)
+
+        self.score_var = tk.IntVar()
+        self.score_var.set(self.score)
+
+        self.pack(fill=tk.BOTH, expand=1)
+
+        self.vcmd = (self.parent.register(self.spin_validate),
+                     '%P')
+        self.points_spinbox = tk.Spinbox(self,
+                                         values=range(31),
+                                         command=self.on_spin_change,
+                                         validate='focusout',
+                                         validatecommand=self.vcmd,
+                                         )
+
+        self.points_spinbox.pack()
+        self.points_spinbox.place(x=0, y=0, width=30)
+
+        self.score_textbox = tk.Entry(self, textvariable=self.score_var)
+        self.score_textbox.pack()
+        self.score_textbox.place(x=35, y=0, width=30)
+
+        self.proficient_checkbox = tk.Checkbutton(self,
+                                                  variable=self.proficient_var,
+                                                  command=self.on_proficiency_change,
+                                                  )
+        self.proficient_checkbox.pack()
+        self.proficient_checkbox.place(x=70, y=0)
+        
+
+
+    def on_spin_change(self):
+        self.spin_validate(int(self.points_spinbox.get()))
+        return 1
+
+    def spin_validate(self, P):
+        self.points = int(P)
+        self.score_base = (self.points // 2) - 5
+        if self.proficient_var.get() == 1:
+            self.score = self.score_base + 2
+        else:
+            self.score = self.score_base
+        self.score_var.set("{}".format(self.score))
+        return 1
+
+    def on_proficiency_change(self):
+        if self.proficient_var.get() == 1:
+            self.score = self.score_base + 2
+        else:
+            self.score = self.score_base
+        self.score_var.set("{}".format(self.score))
+
+
+class SkillFrame(tk.Frame):
+    def __init__(self, parent, skill_name):
+        tk.Frame.__init__(self, parent, relief=tk.GROOVE, borderwidth=1)
+        self.parent = parent
+        self.skill_name = skill_name
+        self.init_ui()
+
+    def init_ui(self):
+
+        self.points = 0
+        self.score_base = -5
+        self.score = self.score_base
+
+        self.proficient_var = tk.IntVar()
+        self.proficient_var.set(0)
+
+        self.score_var = tk.IntVar()
+        self.score_var.set(self.score)
+
+        self.pack(fill=tk.BOTH, expand=1)
+        
+        self.label = tk.Label(self, 
+                              text=self.skill_name,
+                              anchor='e')
+        self.label.pack()
+        self.label.place(x=0, y=0, width=100)
+
+        self.proficient_checkbox = tk.Checkbutton(self,
+                                                  variable=self.proficient_var,
+                                                  command=self.on_proficiency_change,
+                                                  )
+        self.proficient_checkbox.pack()
+        self.proficient_checkbox.place(x=140, y=0)
+
+        self.score_textbox = tk.Entry(self, textvariable=self.score_var)
+        self.score_textbox.pack()
+        self.score_textbox.place(x=160, y=0, width=30)
+
+    def on_proficiency_change(self):
+        if self.proficient_var.get() == 1:
+            self.score = self.score_base + 2
+        else:
+            self.score = self.score_base
+        self.score_var.set("{}".format(self.score))
+
+
+
 def main():
     """ Main Code """
     docopt(__doc__, version=__version__)
-    root = Tkinter.Tk()
-    root.geometry("450x350+300+300")
+    root = tk.Tk()
+    root.geometry("1000x700+150+150")
     app = Example(root)
     root.mainloop()
 
