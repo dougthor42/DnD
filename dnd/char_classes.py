@@ -71,7 +71,12 @@ class Ranger(CharClass):
         pass
 
 
-class Sorcorer(CharClass):
+class Rogue(CharClass):
+    def __init__(self):
+        pass
+
+
+class Sorcerer(CharClass):
     def __init__(self):
         pass
 

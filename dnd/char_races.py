@@ -56,17 +56,17 @@ class Dragonborn(Race):
         pass
 
 
+class Gnome(Race):
+    def __init__(self):
+        pass
+
+
 class HalfElf(Race):
     def __init__(self):
         pass
 
 
 class HalfOrc(Race):
-    def __init__(self):
-        pass
-
-
-class Gnome(Race):
     def __init__(self):
         pass
 
