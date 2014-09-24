@@ -18,6 +18,7 @@ from __future__ import (print_function, division,
                         absolute_import, unicode_literals)
 from docopt import docopt
 import Tkinter as tk
+import abilities
 
 __author__ = "Douglas Thor"
 __version__ = "v0.1.0"
@@ -32,9 +33,6 @@ class Example(tk.Frame):
     def initUI(self):
         self.parent.title("Simple")
         
-#        self.label = tk.Label(self, text="jhsdfkjhskgd")
-#        self.label.place(x=250, y=5)
-
         self.ability_score_strength = AbilityScoreFrame(self)
         self.ability_score_strength.place(x=10, y=10, width=200, height=50)
         
@@ -53,13 +51,10 @@ class Example(tk.Frame):
 #        self.ability_score_charisma = AbilityScoreFrame(self)
 #        self.ability_score_charisma.place(x=10, y=550, width=200, height=100)
         
-        base_y = 10
-        height = 50
-        for name in ["skillname1", "skillname2", "skillname3"]:
-            self.skill = SkillFrame(self, name)
-            self.skill.place(x=250, y=base_y, width=200, height=50)
-            base_y += height + 5
-
+        self.skillblock = SkillFrameBlock(self, "Strength")
+        self.skillblock.place(x=450, y=10)
+        self.skillblock2 = SkillFrameBlock(self, "Wisdom")
+        self.skillblock2.place(x=450, y=80)
 
         self.pack(fill=tk.BOTH, expand=1)
         
@@ -72,7 +67,7 @@ class Example(tk.Frame):
                                     text="Quit",
                                     command=self.buttonClick,
                                     )
-        self.quitButton.place(x=500, y=100)
+        self.quitButton.place(x=500, y=300)
 
         self.var = tk.IntVar()
         self.check_button = tk.Checkbutton(self, text='hellp',
@@ -186,16 +181,15 @@ class AbilityScoreFrame(tk.Frame):
 
 
 class SkillFrame(tk.Frame):
-    def __init__(self, parent, skill_name):
+    def __init__(self, parent, skill_name="skill"):
         tk.Frame.__init__(self, parent, relief=tk.GROOVE, borderwidth=1)
         self.parent = parent
         self.skill_name = skill_name
         self.init_ui()
 
     def init_ui(self):
-
         self.points = 0
-        self.score_base = -5
+        self.score_base = 0
         self.score = self.score_base
 
         self.proficient_var = tk.IntVar()
@@ -204,24 +198,24 @@ class SkillFrame(tk.Frame):
         self.score_var = tk.IntVar()
         self.score_var.set(self.score)
 
-        self.pack(fill=tk.BOTH, expand=1)
-        
-        self.label = tk.Label(self, 
+        self.label = tk.Label(self,
                               text=self.skill_name,
-                              anchor='e')
-        self.label.pack()
-        self.label.place(x=0, y=0, width=100)
+                              anchor='e',
+                              width=20
+                              )
+        self.label.grid(row=0, column=0)
 
         self.proficient_checkbox = tk.Checkbutton(self,
                                                   variable=self.proficient_var,
                                                   command=self.on_proficiency_change,
                                                   )
-        self.proficient_checkbox.pack()
-        self.proficient_checkbox.place(x=140, y=0)
+        self.proficient_checkbox.grid(row=0, column=1)
 
-        self.score_textbox = tk.Entry(self, textvariable=self.score_var)
-        self.score_textbox.pack()
-        self.score_textbox.place(x=160, y=0, width=30)
+        self.score_textbox = tk.Entry(self,
+                                      textvariable=self.score_var,
+                                      width=2,
+                                      justify='center')
+        self.score_textbox.grid(row=0, column=2)
 
     def on_proficiency_change(self):
         if self.proficient_var.get() == 1:
@@ -230,6 +224,25 @@ class SkillFrame(tk.Frame):
             self.score = self.score_base
         self.score_var.set("{}".format(self.score))
 
+
+class SkillFrameBlock(tk.Frame):
+    def __init__(self, parent, ability):
+        tk.Frame.__init__(self, parent, relief=tk.GROOVE, borderwidth=1)
+        self.parent = parent
+        self.ability = ability
+        self.init_ui()
+
+    def init_ui(self):
+        print(self.ability)
+        if len(abilities.SKILLS[self.ability]) == 0:
+            tk.Label(self,
+                     text="-",
+                     justify='center',
+                     width=1,
+                     ).grid(row=0, column=0)
+        else:
+            for _i, _a in enumerate(abilities.SKILLS[self.ability]):
+                SkillFrame(self, _a).grid(row=_i, column=0)
 
 
 def main():
