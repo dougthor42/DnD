@@ -21,15 +21,15 @@ import Tkinter as tk
 import abilities
 import char_classes
 import char_races
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 __author__ = "Douglas Thor"
 __version__ = "v0.1.0"
 
 root = tk.Tk()
-
-# example of callback, showing the changing of a varaible
-def callback(*args):
-    print("Variable changed to {}!".format(args))
 
 
 class UIVars(object):
@@ -37,7 +37,7 @@ class UIVars(object):
     def __init__(self):
         self.proficiency_bonus = tk.IntVar()
         self.proficiency_bonus.set(2)
-        
+
         self.ability_points = {}
         self.ability_score = {}
         self.ability_proficient = {}
@@ -70,7 +70,56 @@ class UIVars(object):
                 self.skill_score_display[skill] = tk.IntVar()
                 self.skill_score_display[skill].set(-5)
 
+
+global ui_vars
 ui_vars = UIVars()
+
+
+class UIVarValues(object):
+    """ Contains all of the UI Variables' values (only) """
+    def __init__(self):
+        self.proficiency_bonus = ui_vars.proficiency_bonus.get()
+
+        self.ability_points = {}
+        self.ability_score = {}
+        self.ability_proficient = {}
+        self.ability_saving_throw = {}
+
+        self.skill_proficient = {}
+        self.skill_score = {}
+        self.skill_score_display = {}
+
+        for stat in abilities.ABILITIES:
+            self.ability_points[stat] = ui_vars.ability_points[stat].get()
+            self.ability_score[stat] = ui_vars.ability_score[stat].get()
+            self.ability_proficient[stat] = ui_vars.ability_proficient[stat].get()
+            self.ability_saving_throw[stat] = ui_vars.ability_saving_throw[stat].get()
+
+            for skill in abilities.SKILLS[stat]:
+                self.skill_proficient[skill] = ui_vars.skill_proficient[skill].get()
+                self.skill_score[skill] = ui_vars.skill_score[skill].get()
+                self.skill_score_display[skill] = ui_vars.skill_score_display[skill].get()
+
+
+def strip_ui_var_values():
+    """ Strips the values from each Tkinter variable in the UIVars class """
+    return UIVarValues()
+
+
+def load_ui_var_values(values):
+    """ Loads values into each Tkinter variable in the UIVars class """
+    ui_vars.proficiency_bonus.set(values.proficiency_bonus)
+
+    for stat in abilities.ABILITIES:
+        ui_vars.ability_points[stat].set(values.ability_points[stat])
+        ui_vars.ability_score[stat].set(values.ability_score[stat])
+        ui_vars.ability_proficient[stat].set(values.ability_proficient[stat])
+        ui_vars.ability_saving_throw[stat].set(values.ability_saving_throw[stat])
+
+        for skill in abilities.SKILLS[stat]:
+            ui_vars.skill_proficient[skill].set(values.skill_proficient[skill])
+            ui_vars.skill_score[skill].set(values.skill_score[skill])
+            ui_vars.skill_score_display[skill].set(values.skill_score_display[skill])
 
 
 class MainUI(tk.Frame):
@@ -101,19 +150,20 @@ class MainUI(tk.Frame):
         self.stat_block = StatBlockFrame(self)
         self.stat_block.place(x=150, y=10)
 
+        save_button = tk.Button(self,
+                                text='Save',
+                                command=self.save_click,
+                                )
+        save_button.place(x=10, y=400)
+
+        load_button = tk.Button(self,
+                                text='Load',
+                                command=self.load_click,
+                                )
+        load_button.place(x=60, y=400)
+
         self.pack(fill=tk.BOTH, expand=1)
 
-#        close_button = tk.Button(self, text='Close')
-#        close_button.pack(side=tk.RIGHT, padx=5, pady=5)
-#        ok_button = tk.Button(self, text='OK')
-#        ok_button.pack(side=tk.RIGHT)
-#
-#        self.quitButton = tk.Button(self,
-#                                    text="Quit",
-#                                    command=self.buttonClick,
-#                                    )
-#        self.quitButton.place(x=500, y=300)
-#
 #        self.var = tk.IntVar()
 #        self.check_button = tk.Checkbutton(self, text='hellp',
 #                                           variable=self.var,
@@ -123,30 +173,36 @@ class MainUI(tk.Frame):
 #        self.check_button.select()
 #        self.check_button.place(x=300, y=300)
 
-#        classes = ['A',
-#                   'B',
-#                   'C',
-#                   ]
-#
-#        list_box = tk.Listbox(self)
-#        for _i in classes:
-#            list_box.insert(tk.END, _i)
-#
-#        list_box.bind("<<ListboxSelect>>", self.onSelect)
-#        list_box.place(x=250, y=50)
-#
 #        self.string_var = tk.StringVar()
 #        self.label = tk.Label(self, text=0, textvariable=self.string_var)
 #        self.label.place(x=120, y=210)
 
-    def onClick(self):
-        if self.var.get() == 1:
-            self.master.title("Checkbutton")
-        else:
-            self.master.title("")
+    def save_click(self):
+        """ Saves the UI Variables to a file. """
+        # I can't pickle Tkinter variables (IntVar, etc.) directly, so I
+        # created a function to strip the value from them. I then pickle
+        # this value.
+        print("Saving data!")
+        ui_values = strip_ui_var_values()
+#        with open("X:\\WinPython27\\projects\\github\\DnD\\trunk\\dnd\\pickle.txt", 'w') as of:
+        with open("pickle.txt", 'w') as of:
+            pickle.dump(ui_values, of)
 
-    def buttonClick(self):
-        print("clicked!")
+    def load_click(self):
+        """ Load the UI Variablres from a file. """
+        # Since I can't pickle Tkinter variables directly, the file only
+        # contains the value of the variables. I have to read the values and
+        # then recreate and set each variable.
+        print("Loading Data!")
+        with open("pickle.txt", 'r') as of:
+            ui_values = pickle.load(of)
+            load_ui_var_values(ui_values)
+
+#    def onClick(self):
+#        if self.var.get() == 1:
+#            self.master.title("Checkbutton")
+#        else:
+#            self.master.title("")
 
     def onSelect(self, val):
         sender = val.widget
@@ -241,16 +297,13 @@ class AbilityBlock(tk.Frame):
         self.score = self.score_base
 
         self.proficient_var = ui_vars.ability_proficient[self.ability]
-#        self.proficient_var = tk.IntVar()
         self.proficient_var.set(0)
 
         self.score_var = ui_vars.ability_score[self.ability]
-#        self.score_var = tk.IntVar()
         self.score_var.set(self.score)
 
         self.saving_throw = 0
         self.saving_throw_value = ui_vars.ability_saving_throw[self.ability]
-#        self.saving_throw_value = tk.IntVar()
         self.saving_throw_value.set(self.saving_throw)
 
         self.skill_count = len(abilities.SKILLS[self.ability])
@@ -273,6 +326,7 @@ class AbilityBlock(tk.Frame):
                      '%P')
         self.points_spinbox = tk.Spinbox(self,
                                          values=range(31),
+                                         textvariable=ui_vars.ability_points[self.ability],
                                          command=self.on_spin_change,
                                          validate='focusout',
                                          validatecommand=self.vcmd,
@@ -289,8 +343,6 @@ class AbilityBlock(tk.Frame):
                                       width=4,
                                       justify='center',
                                       )
-#        self.score_textbox.pack()
-#        self.score_textbox.place(x=35, y=0, width=30)
         self.score_textbox.grid(row=0,
                                 column=2,
                                 rowspan=self.skill_count,
@@ -320,7 +372,6 @@ class AbilityBlock(tk.Frame):
         # span the columns
         if len(abilities.SKILLS[self.ability]) == 0:
             SkillFrameEmpty(self).grid(row=0, column=5)
-#            SkillFrame(self, '').grid(row=0, column=5)
         else:
             for _i, _a in enumerate(abilities.SKILLS[self.ability]):
                 SkillFrame(self, _a).grid(row=_i, column=5)
