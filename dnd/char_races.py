@@ -22,6 +22,9 @@ __author__ = "Douglas Thor"
 __version__ = "v0.1.0"
 
 
+RACES = ("Dwarf", "Elf", "Halfling", "Human",
+         "Dragonborn", "Gnome", "Half-Elf", "Half-Orc", "Tiefling")
+
 class Race(object):
     # This is needed so that TestType is an Abstract Base Class
     # PY3: changes when porting to Python3

@@ -22,6 +22,11 @@ __author__ = "Douglas Thor"
 __version__ = "v0.1.0"
 
 
+CLASSES = ("Barbarian", "Bard", "Cleric",
+           "Druid", "Fighter", "Monk", "Paladin",
+           "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard")
+
+
 class CharClass(object):
     # This is needed so that TestType is an Abstract Base Class
     # PY3: changes when porting to Python3
