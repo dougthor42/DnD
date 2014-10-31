@@ -14,8 +14,8 @@ Options:
     --version           # Show version.
 """
 
-from __future__ import (print_function, division,
-                        absolute_import, unicode_literals)
+from __future__ import print_function, division, absolute_import
+#from __future__ import unicode_literals
 from docopt import docopt
 import Tkinter as tk
 import abilities
@@ -76,7 +76,13 @@ ui_vars = UIVars()
 
 
 class UIVarValues(object):
-    """ Contains all of the UI Variables' values (only) """
+    """
+    Grabs the current UI Variables' values and sets them into a class which
+    has the same strucutre as the UIVars class.
+    
+    Used for pickling data, as you can't pickle
+    a Tkinter Variable (IntVar, etc.)
+    """
     def __init__(self):
         self.proficiency_bonus = ui_vars.proficiency_bonus.get()
 
@@ -184,7 +190,6 @@ class MainUI(tk.Frame):
         # this value.
         print("Saving data!")
         ui_values = strip_ui_var_values()
-#        with open("X:\\WinPython27\\projects\\github\\DnD\\trunk\\dnd\\pickle.txt", 'w') as of:
         with open("pickle.txt", 'w') as of:
             pickle.dump(ui_values, of)
 
@@ -217,6 +222,12 @@ class MainUI(tk.Frame):
 
 
 class SkillFrame(tk.Frame):
+    """
+    The SkillFrame box. Contains the skill name (Athletics, Insight, etc.),
+    a proficiency checkbox, and a score value.
+    
+    This is (currently) the lowest-level item.
+    """
     def __init__(self, parent, skill="skill"):
         tk.Frame.__init__(self, parent, relief=tk.GROOVE, borderwidth=1)
         self.parent = parent
@@ -260,6 +271,10 @@ class SkillFrame(tk.Frame):
 
 
 class SkillFrameEmpty(tk.Frame):
+    """
+    A special kind of SkillFrame box that is empty. Used for the CON stat
+    because it has no skills associated with it.
+    """
     def __init__(self, parent, skill=''):
         tk.Frame.__init__(self, parent, relief=tk.GROOVE, borderwidth=1)
         self.parent = parent
@@ -284,6 +299,13 @@ class SkillFrameEmpty(tk.Frame):
 
 
 class AbilityBlock(tk.Frame):
+    """
+    Frame containing information on an ability such as STR or DEX.
+    
+    Contains the name, a numberbox, a proficient box, and an array of
+    SkillFrames.
+    """
+
     def __init__(self, parent, ability):
         tk.Frame.__init__(self, parent, relief=tk.GROOVE, borderwidth=1)
         self.parent = parent
