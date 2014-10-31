@@ -31,7 +31,7 @@ __author__ = "Douglas Thor"
 __version__ = "v0.1.0"
 
 BORDER = wx.NO_BORDER
-BORDER = wx.SIMPLE_BORDER
+#BORDER = wx.SIMPLE_BORDER
 
 
 class SkillPanelEmpty(wx.Panel):
@@ -54,6 +54,7 @@ class SkillPanelEmpty(wx.Panel):
         self.label = wx.StaticText(self,
                                    label=self.skill,
                                    style=wx.ALIGN_RIGHT,
+                                   size=(80, -1)
                                    )
 
         self.proficient = wx.CheckBox(self,
@@ -64,7 +65,8 @@ class SkillPanelEmpty(wx.Panel):
 
         self.skill_val = wx.StaticText(self,
                                        label="0",
-                                       style=wx.ALIGN_RIGHT,
+                                       style=wx.ALIGN_CENTER,
+                                       size=(20, -1)
                                        )
 
         # Add items to our layout manager
@@ -100,6 +102,7 @@ class SkillPanel(wx.Panel):
         self.label = wx.StaticText(self,
                                    label=self.skill,
                                    style=wx.ALIGN_RIGHT,
+                                   size=(80, -1)
                                    )
 
         self.proficient = wx.CheckBox(self,
@@ -108,7 +111,8 @@ class SkillPanel(wx.Panel):
 
         self.skill_val = wx.StaticText(self,
                                        label="0",
-                                       style=wx.ALIGN_RIGHT,
+                                       style=wx.ALIGN_CENTER,
+                                       size=(20, -1)
                                        )
 
         # Bind any events
@@ -149,7 +153,7 @@ class SkillBlock(wx.Panel):
     associated with it (the CON case).
     """
     def __init__(self, parent, ability="None"):
-        wx.Panel.__init__(self, parent, style=BORDER)
+        wx.Panel.__init__(self, parent, style=wx.SIMPLE_BORDER)
         self.ability = ability
         self.skill_count = len(abilities.SKILLS[self.ability])
         if self.skill_count == 0:
@@ -164,7 +168,7 @@ class SkillBlock(wx.Panel):
 
         # Create the widgets that we'll add
         if self.ability == "Constitution":
-            self.fgs.Add(SkillPanelEmpty(self, "None"),
+            self.fgs.Add(SkillPanel(self, ""),
                          )
         else:
             for n, skill in enumerate(abilities.SKILLS[self.ability]):
@@ -197,13 +201,15 @@ class AbilitySubBlock(wx.Panel):
         # generate the widgets
         self.label = wx.StaticText(self,
 #                                   wx.ID_ANY,
-#                                   size=(60, 40),
+                                   size=(120, -1),
                                    label=self.ability,
-#                                   style=wx.ALIGN_RIGHT,
+                                   style=wx.ALIGN_CENTER,
                                    )
 
         self.points = wx.SpinCtrl(self,
                                   wx.ID_ANY,
+                                  size=(40, -1),
+                                  style=wx.ALIGN_CENTER,
                                   )
 
         # Add widgets to the layout manager
@@ -226,7 +232,7 @@ class AbilityBlock(wx.Panel):
         array of associated skills
     """
     def __init__(self, parent, ability="None"):
-        wx.Panel.__init__(self, parent, style=BORDER)
+        wx.Panel.__init__(self, parent, style=wx.SIMPLE_BORDER)
         self.ability = ability
         self.init_ui()
 
@@ -261,15 +267,34 @@ class Abilities(wx.Panel):
 
     def init_ui(self):
         # Add layout management
-        self.vbox = wx.BoxSizer(wx.VERTICAL)
+        self.hbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.gbs = wx.GridBagSizer()
     
         # Add items
-        for ability in abilities.ABILITIES:
-            self.vbox.Add(AbilityBlock(self, ability),
-                          )
+        col_titles = ("Ability",
+                      "Proficient",
+                      "Score",
+                      "Modifier",
+                      "Save",
+                      "Skills"
+                      )
+        for _n, text in enumerate(col_titles):
+            self.gbs.Add(wx.StaticText(self,
+                                       label=text,
+                                       style=wx.ALIGN_CENTER,
+                                       ),
+                         pos=(0, _n),
+                         )
+    
+    
+        for _n, ability in enumerate(abilities.ABILITIES):
+            self.gbs.Add(AbilityBlock(self, ability),
+                         pos=(_n + 1, 0),
+                         )
 
         # Set the sizer
-        self.SetSizer(self.vbox)
+        self.hbox.Add(self.gbs)
+        self.SetSizer(self.hbox)
 
 
 class MainPanel(wx.Panel):
