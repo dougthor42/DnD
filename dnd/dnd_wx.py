@@ -127,7 +127,7 @@ class SkillPanel(wx.Panel):
 
         # Set the sizer
         self.SetSizer(self.hbox)
-        
+
         # Register listeners
         pub.subscribe(self.update_text, self.message_lbl)
 
@@ -163,7 +163,7 @@ class SkillBlock(wx.Panel):
     def init_ui(self):
         # Add layout management
         self.hbox = wx.BoxSizer(wx.HORIZONTAL)
-        self.fgs = wx.FlexGridSizer(rows=self.skill_count, cols=1, 
+        self.fgs = wx.FlexGridSizer(rows=self.skill_count, cols=1,
                                     vgap=2, hgap=2)
 
         # Create the widgets that we'll add
@@ -220,7 +220,6 @@ class AbilitySubBlock(wx.Panel):
         self.SetSizer(self.hbox)
 
 
-
 class AbilityBlock(wx.Panel):
     """
     AbilityBlock panel which contains:
@@ -239,23 +238,118 @@ class AbilityBlock(wx.Panel):
     def init_ui(self):
         # Add layout management
         self.hbox = wx.BoxSizer(wx.HORIZONTAL)
-        self.fgs = wx.FlexGridSizer(rows=1, cols=2, vgap=2, hgap=2)
+        self.fgs = wx.FlexGridSizer(rows=1, cols=7, vgap=2, hgap=2)
+
+        # Create items
+        style = wx.ALIGN_CENTER | wx.SIMPLE_BORDER
+        self.ability_label = wx.StaticText(self,
+                                           size=(120, -1),
+                                           label=self.ability,
+                                           style=style,
+                                           )
+
+        points_style = wx.ALIGN_CENTER | wx.SP_ARROW_KEYS | wx.TE_PROCESS_ENTER
+        self.points = wx.SpinCtrl(self,
+                                  wx.ID_ANY,
+                                  size=(40, -1),
+                                  style=points_style,
+                                  min=0,
+                                  max=30,
+                                  )
+
+        self.proficient = wx.CheckBox(self,
+                                      wx.ID_ANY,
+                                      )
+
+        self.modifier = wx.TextCtrl(self,
+                                    -1,
+                                    "mod",
+                                    )
+
+        self.save = wx.TextCtrl(self,
+                                -1,
+                                "save",
+                                )
+
+        self.skills = SkillBlock(self, self.ability)
+
+        # Bind Events
+        self.points.Bind(wx.EVT_SPINCTRL, self.points_change)
+        self.proficient.Bind(wx.EVT_CHECKBOX, self.proficient_change)
 
         # Add items to the layout manager
-        self.fgs.Add(AbilitySubBlock(self, self.ability),
-#                     flag=wx.EXPAND,
-                     flag=wx.ALIGN_CENTER_VERTICAL,
+        flag = wx.ALIGN_CENTER_VERTICAL
+        self.fgs.Add(self.ability_label,
+                     flag=flag,
                      )
 
-        self.fgs.Add(SkillBlock(self, self.ability),
-                     flag=wx.ALIGN_CENTER_VERTICAL,
+        self.fgs.Add(self.points,
+                     flag=flag,
+                     )
+
+        self.fgs.Add(self.proficient,
+                     flag=flag,
+                     )
+
+        self.fgs.Add(self.modifier,
+                     flag=flag,
+                     )
+
+        self.fgs.Add(self.save,
+                     flag=flag,
+                     )
+
+        self.fgs.Add(self.skills,
+                     flag=flag,
                      )
 
         self.hbox.Add(self.fgs, flag=wx.ALL, border=3)
 
         # Set the sizer
         self.SetSizer(self.hbox)
+        
+        # Create listener labels and Register Listeners
+#        pub.subscribe(code_to_execute, label_to_listen_for)
+        self.point_change_lbl = "{}_pts_change".format(self.ability)
+        self.proficiency_change_lbl = "{}_prof_change".format(self.ability)
+        pub.subscribe(self.on_pt_change, self.point_change_lbl)
+        pub.subscribe(self.on_prof_change, self.proficiency_change_lbl)
+        
+    def points_change(self, event):
+        """ Send out a signal with the new point value """
+        pub.sendMessage(self.point_change_lbl, value=event.GetInt())
 
+    def on_pt_change(self, value):
+        self.modifier.SetLabel(str((value // 2) - 5))
+
+    def proficient_change(self, event):
+        print(event.GetInt())
+        pub.sendMessage(self.proficiency_change_lbl, value=event.GetInt())
+
+    def on_prof_change(self, value):
+        print("proficiency changed!")
+
+
+class AbilityBlockColumnHeader(wx.Panel):
+    """ Column Headers for the Ability block """
+    def __init__(self, parent, text):
+        wx.Panel.__init__(self, parent)
+        self.text = text
+        self.init_ui()
+
+    def init_ui(self):
+        # Add layout management
+        self.hbox = wx.BoxSizer(wx.HORIZONTAL)
+        
+        # Add items
+        self.col_header = wx.StaticText(self,
+                                        label=self.text,
+#                                        style=wx.ALIGN_CENTER|wx.SIMPLE_BORDER,
+                                        )
+
+        self.hbox.Add(self.col_header)
+        self.SetSizer(self.hbox)
+        
 
 class Abilities(wx.Panel):
     """
@@ -268,32 +362,28 @@ class Abilities(wx.Panel):
     def init_ui(self):
         # Add layout management
         self.hbox = wx.BoxSizer(wx.HORIZONTAL)
-        self.gbs = wx.GridBagSizer()
-    
+#        self.gbs = wx.GridBagSizer()
+        self.fgs = wx.FlexGridSizer(rows=7, cols=1)
+
         # Add items
         col_titles = ("Ability",
-                      "Proficient",
                       "Score",
+                      "Proficient",
                       "Modifier",
                       "Save",
                       "Skills"
                       )
-        for _n, text in enumerate(col_titles):
-            self.gbs.Add(wx.StaticText(self,
-                                       label=text,
-                                       style=wx.ALIGN_CENTER,
-                                       ),
-                         pos=(0, _n),
-                         )
-    
-    
+#        for _n, text in enumerate(col_titles):
+#            self.fgs.Add(AbilityBlockColumnHeader(self, text),
+#                         flag=wx.ALIGN_CENTER_HORIZONTAL,
+#                         )
+
         for _n, ability in enumerate(abilities.ABILITIES):
-            self.gbs.Add(AbilityBlock(self, ability),
-                         pos=(_n + 1, 0),
+            self.fgs.Add(AbilityBlock(self, ability),
                          )
 
         # Set the sizer
-        self.hbox.Add(self.gbs)
+        self.hbox.Add(self.fgs)
         self.SetSizer(self.hbox)
 
 
@@ -308,15 +398,17 @@ class MainPanel(wx.Panel):
 
     def init_ui(self):
         self.hbox = wx.BoxSizer(wx.HORIZONTAL)
-        
-        
-        self.race_choice = wx.Choice(self,
-                                     choices=[_i for _i in char_races.RACES],
-#                                     style=wx.CB_READONLY,
-                                     )
-        self.race_choice.SetSelection(0)
-        self.race_choice.Bind(wx.EVT_CHOICE, self.race_change)
-#
+
+#        self.race_choice = wx.Choice(self,
+#                                     choices=[_i for _i in char_races.RACES],
+##                                     style=wx.CB_READONLY,
+#                                     )
+#        self.race_choice.SetSelection(0)
+#        self.race_choice.Bind(wx.EVT_CHOICE, self.race_change)
+
+
+
+
 #        self.combo_box.Bind(wx.EVT_COMBOBOX, self.send_update)
 #
 #        self.text = wx.StaticText(self,
@@ -328,7 +420,7 @@ class MainPanel(wx.Panel):
 #        # register listener
 #        pub.subscribe(self.update_text, 'updating text')
 
-        self.hbox.Add(self.race_choice)
+#        self.hbox.Add(self.race_choice)
         self.hbox.Add(Abilities(self))
         self.SetSizer(self.hbox)
 
