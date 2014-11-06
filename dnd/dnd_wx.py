@@ -18,6 +18,7 @@ from __future__ import print_function, division, absolute_import
 #from __future__ import unicode_literals
 from docopt import docopt
 import wx
+import wx.lib.mixins.inspection
 from pubsub import pub
 import abilities
 import char_classes
@@ -151,9 +152,15 @@ class SkillBlock(wx.Panel):
     A SkillBlock panel. Contains all the skills associated with a
     given ability. Handles the logic for when the ability has no skills
     associated with it (the CON case).
+    
+    Contains:
+        skill name
+        proficient boolean
+        score (modifier)
     """
     def __init__(self, parent, ability="None"):
         wx.Panel.__init__(self, parent, style=wx.SIMPLE_BORDER)
+#        self.SetBackgroundColour(wx.BLUE)
         self.ability = ability
         self.skill_count = len(abilities.SKILLS[self.ability])
         if self.skill_count == 0:
@@ -176,6 +183,7 @@ class SkillBlock(wx.Panel):
                              )
 
         # Add items to our layout manager and set the sizer
+        self.hbox.Add(wx.StaticText(self, label="SkillBlock"))
         self.hbox.Add(self.fgs)
         self.SetSizer(self.hbox)
 
@@ -185,9 +193,12 @@ class AbilitySubBlock(wx.Panel):
     Contains the centered items for ability block.
         ability
         points
-        pase score
-        prodiciecy
-        actual score
+        racial
+        total
+        base score (modifier)
+        saving throw prodiciecy
+        saving throw bonus
+        associated skills
     """
     def __init__(self, parent, ability="None"):
         wx.Panel.__init__(self, parent, style=BORDER)
@@ -225,14 +236,17 @@ class AbilityBlock(wx.Panel):
     AbilityBlock panel which contains:
         ability
         points
-        base score
-        proficiency
-        actual score
-        array of associated skills
+        racial
+        total
+        base score (modifier)
+        saving throw prodiciecy
+        saving throw bonus
+        associated skills
     """
     def __init__(self, parent, ability="None"):
         wx.Panel.__init__(self, parent, style=wx.SIMPLE_BORDER)
         self.ability = ability
+#        self.SetBackgroundColour(wx.RED)
         self.init_ui()
 
     def init_ui(self):
@@ -303,6 +317,7 @@ class AbilityBlock(wx.Panel):
                      flag=flag,
                      )
 
+        self.hbox.Add(wx.StaticText(self, label="AbilityBlock"))
         self.hbox.Add(self.fgs, flag=wx.ALL, border=3)
 
         # Set the sizer
@@ -383,8 +398,69 @@ class Abilities(wx.Panel):
                          )
 
         # Set the sizer
+        self.hbox.Add(wx.StaticText(self, label="Abilities"))
         self.hbox.Add(self.fgs)
         self.SetSizer(self.hbox)
+
+
+class CharacterBlock(wx.Panel):
+    """
+    Panel containing all character info
+    
+    Given Name
+    Surname
+    Race
+    Subrace
+    Gender
+    Age
+    Weight
+    Height
+    Skin
+    Hair
+    Eyes
+    Size
+    Speed
+    Vision
+    Alignment
+    Diety/Religion
+    Background
+    Classes
+    class specialization
+    class level
+    hit dice    
+    """
+    pass
+
+
+class ExperienceBlock(wx.Panel):
+    """
+    Panel containing all experience info
+    experience points
+    next level
+    to_go
+    character level
+    """
+    pass
+
+
+class CharacterPersonality(wx.Panel):
+    """
+    Panel containing all the character personality info:
+    Special
+    Personality Trait
+    Ideal
+    Bond
+    Flaw
+    """
+    pass
+
+
+class ClassPoints(wx.Panel):
+    """
+    Panel containing all the class points info such as Ki, Invocations,
+    Inpiration points, etc.
+    """
+    pass
 
 
 class MainPanel(wx.Panel):
@@ -397,45 +473,47 @@ class MainPanel(wx.Panel):
 #        self.parent = parent
 
     def init_ui(self):
-        self.hbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.vbox = wx.BoxSizer(wx.VERTICAL)
 
-#        self.race_choice = wx.Choice(self,
-#                                     choices=[_i for _i in char_races.RACES],
-##                                     style=wx.CB_READONLY,
-#                                     )
-#        self.race_choice.SetSelection(0)
-#        self.race_choice.Bind(wx.EVT_CHOICE, self.race_change)
+        self.race_choice = wx.Choice(self,
+                                     choices=[_i for _i in char_races.RACES],
+#                                     style=wx.CB_READONLY,
+                                     )
+        self.race_choice.SetSelection(0)
+        self.race_choice.Bind(wx.EVT_CHOICE, self.send_update)
 
 
 
 
 #        self.combo_box.Bind(wx.EVT_COMBOBOX, self.send_update)
-#
-#        self.text = wx.StaticText(self,
-#                                  wx.ID_ANY,
-#                                  pos=(50, 50),
-#                                  label="Hello",
-#                                  )
-#
-#        # register listener
-#        pub.subscribe(self.update_text, 'updating text')
 
-#        self.hbox.Add(self.race_choice)
-        self.hbox.Add(Abilities(self))
-        self.SetSizer(self.hbox)
+        self.text = wx.StaticText(self,
+                                  wx.ID_ANY,
+                                  pos=(50, 50),
+                                  label="Hello",
+                                  )
+
+        # register listener
+        pub.subscribe(self.update_text, 'updating text')
+
+        self.vbox.Add(self.race_choice)
+        self.vbox.Add(Abilities(self))
+        self.vbox.Add(wx.StaticText(self, label="Press CTRL-ALT-I to start inspector"))
+        self.vbox.Add(self.text)
+        self.SetSizer(self.vbox)
 
     def race_change(self, event):
         print(event.GetInt())
 
-#    # create listener
-#    def update_text(self, value):
-#        """ Update the label text when a message is received """
-#        self.text.SetLabel(value)
-#
-#    def send_update(self, event):
-#        print(event.GetString())
-#        print(event.GetInt())
-#        pub.sendMessage('updating text', value=event.GetString())
+    # create listener
+    def update_text(self, value):
+        """ Update the label text when a message is received """
+        self.text.SetLabel(value)
+
+    def send_update(self, event):
+        print(event.GetString())
+        print(event.GetInt())
+        pub.sendMessage('updating text', value=event.GetString())
 
 
 class MainWindow(wx.Frame):
@@ -453,12 +531,21 @@ class MainWindow(wx.Frame):
                           title=title,
                           size=size,
                           )
-#        self.parent = parent
         self.init_ui()
 
     def init_ui(self):
         self.panel = MainPanel(self)
-        self.Show(True)
+#        self.Show(True)
+
+
+class DnDApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+    """ Main App """
+    def OnInit(self):
+        self.Init()
+        frame = MainWindow("DnD App!")
+        frame.Show()
+        self.SetTopWindow(frame)
+        return True
 
 
 def main():
@@ -466,11 +553,12 @@ def main():
     print("Running...")
     docopt(__doc__, version=__version__)
     # Create a new app, don't redirect stdout/stderr to a window.
-    app = wx.App(False)
+    app = DnDApp()
     # A Frame is a top-level window.
-    frame = MainWindow("Test")
+#    frame = MainWindow("Test")
     # Show the frame.
-    frame.Show(True)
+#    frame.Show(True)
+#    wx.lib.inspection.InspectionTool().Show()
     app.MainLoop()
 
 
