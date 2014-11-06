@@ -275,15 +275,26 @@ class AbilityBlock(wx.Panel):
                                       wx.ID_ANY,
                                       )
 
-        self.modifier = wx.TextCtrl(self,
-                                    -1,
-                                    "mod",
-                                    )
+#        self.modifier = wx.TextCtrl(self,
+#                                    -1,
+#                                    "mod",
+#                                    )
+        self.modifier = wx.StaticText(self,
+                                      -1,
+                                      label="mod",
+                                      style=wx.SIMPLE_BORDER | wx.ALIGN_CENTER,
+                                      )
+                                    
 
-        self.save = wx.TextCtrl(self,
-                                -1,
-                                "save",
-                                )
+#        self.save = wx.TextCtrl(self,
+#                                -1,
+#                                "save",
+#                                )
+        self.save = wx.StaticText(self,
+                                  -1,
+                                  label="save",
+                                  style=wx.SIMPLE_BORDER | wx.ALIGN_CENTER,
+                                  )
 
         self.skills = SkillBlock(self, self.ability)
 
@@ -305,6 +316,7 @@ class AbilityBlock(wx.Panel):
                      flag=flag,
                      )
 
+#        self.fgs.Add(wx.StaticLine(self, -1, style=wx.LI_VERTICAL, size=(1,50)))
         self.fgs.Add(self.modifier,
                      flag=flag,
                      )
